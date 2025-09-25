@@ -127,3 +127,143 @@ type Direction = "up" | "left" | "right" | "down";
 type RotateDegree = 0 | 90 | 180 | 270;
 type DirectionDegreeMap = Record<Direction, RotateDegree>;
 type MoveResult = { result: Map2048; isMoved: boolean; score: number };
+
+export type Board = (number | null)[][];
+
+export type SaveState = {
+  board: Board;
+  score: number;
+  gameOver: boolean;
+};
+
+// logic.ts
+
+export type Grid = number[][];
+export type Dir = 'Left' | 'Right' | 'Up' | 'Down';
+export const SIZE = 4;
+
+export function emptyGrid(): Grid {
+  return Array.from({ length: SIZE }, () => Array(SIZE).fill(0));
+}
+
+export function cloneGrid(g: Grid): Grid {
+  return g.map((row) => row.slice());
+}
+
+function getEmptyCells(g: Grid) {
+  const cells: { r: number; c: number }[] = [];
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      if (g[r][c] === 0) cells.push({ r, c });
+    }
+  }
+  return cells;
+}
+
+export function spawnRandomTile(g: Grid): Grid {
+  const empty = getEmptyCells(g);
+  if (empty.length === 0) return g;
+
+  const spot = empty[Math.floor(Math.random() * empty.length)];
+  const value = Math.random() < 0.9 ? 2 : 4;
+
+  const nextGrid = cloneGrid(g);
+  nextGrid[spot.r][spot.c] = value;
+  return nextGrid;
+}
+
+function slideAndMerge(line: number[]): { result: number[]; scoreDelta: number; moved: boolean } {
+  const nonZero = line.filter((n) => n !== 0);
+  const merged: number[] = [];
+  let scoreDelta = 0;
+
+  for (let i = 0; i < nonZero.length; i++) {
+    if (i + 1 < nonZero.length && nonZero[i] === nonZero[i + 1]) {
+      const val = nonZero[i] * 2;
+      merged.push(val);
+      scoreDelta += val;
+      i++;
+    } else {
+      merged.push(nonZero[i]);
+    }
+  }
+  while (merged.length < SIZE) merged.push(0);
+
+  const moved = !arraysEqual(line, merged);
+  return { result: merged, scoreDelta, moved };
+}
+
+function arraysEqual(a: number[], b: number[]) {
+  return a.length === b.length && a.every((val, i) => val === b[i]);
+}
+
+export function move(grid: Grid, dir: Dir): { grid: Grid; moved: boolean; scoreDelta: number } {
+  let moved = false;
+  let scoreDelta = 0;
+  const nextGrid = cloneGrid(grid);
+
+  const applyLine = (
+    getLine: () => number[],
+    setLine: (values: number[]) => void,
+    reversed: boolean
+  ) => {
+    const raw = getLine();
+    const line = reversed ? [...raw].reverse() : raw;
+
+    const { result, scoreDelta: delta, moved: lineMoved } = slideAndMerge(line);
+    const finalLine = reversed ? [...result].reverse() : result;
+
+    setLine(finalLine);
+    if (lineMoved) moved = true;
+    scoreDelta += delta;
+  };
+
+  switch (dir) {
+    case 'Left':
+      for (let r = 0; r < SIZE; r++) {
+        applyLine(() => nextGrid[r], (vals) => { nextGrid[r] = vals; }, false);
+      }
+      break;
+    case 'Right':
+      for (let r = 0; r < SIZE; r++) {
+        applyLine(() => nextGrid[r], (vals) => { nextGrid[r] = vals; }, true);
+      }
+      break;
+    case 'Up':
+      for (let c = 0; c < SIZE; c++) {
+        applyLine(
+          () => nextGrid.map((row) => row[c]),
+          (vals) => { for (let r = 0; r < SIZE; r++) nextGrid[r][c] = vals[r]; },
+          false
+        );
+      }
+      break;
+    case 'Down':
+      for (let c = 0; c < SIZE; c++) {
+        applyLine(
+          () => nextGrid.map((row) => row[c]),
+          (vals) => { for (let r = 0; r < SIZE; r++) nextGrid[r][c] = vals[r]; },
+          true
+        );
+      }
+      break;
+  }
+
+  return { grid: nextGrid, moved, scoreDelta };
+}
+
+export function hasMoves(grid: Grid): boolean {
+  if (getEmptyCells(grid).length > 0) return true;
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      const val = grid[r][c];
+      if (r + 1 < SIZE && grid[r + 1][c] === val) return true;
+      if (c + 1 < SIZE && grid[r][c + 1] === val) return true;
+    }
+  }
+  return false;
+}
+
+export function maxTile(grid: Grid): number {
+  return Math.max(...grid.flat());
+}
