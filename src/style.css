@@ -75,8 +75,6 @@ body {
   margin-bottom: 8px;
 }
 
-
-
 .header-text {
   display: flex;
   align-items: center;
@@ -243,7 +241,6 @@ body {
   margin-bottom: 16px;
 }
 
-
 .recipe-ingredients-list {
   padding-left: 0; 
   color: #374151;
@@ -263,16 +260,12 @@ body {
   color: #4b5563;
 }
 
-
-
 .recipe-detail-ingredients-section {
   background-color: #f9fafb;
   padding: 24px;
   border-radius: 12px;
   margin-top: 32px;
 }
-
-
 
 .recipe-detail-ingredients-section h2 {
   font-size: 20px;
