@@ -17,8 +17,6 @@ type Detail = {
   mealType: string[];
 };
 
-const BASE = "https://dummyjson.com";
-
 export default function Recipes() {
   const { id } = useParams<{ id: string }>();
   // Maintaining original state parameter names: data, loading, err
@@ -35,14 +33,13 @@ export default function Recipes() {
         setLoading(true);
         setErr(""); // Clear previous errors
 
-        const rid = Number(id);
-        const res = await fetch(`${BASE}/recipes/${rid}`, { headers: { Accept: "application/json" } });
+        const res = await fetch(`https://dummyjson.com/recipes/${id}`);
         
         if (!res.ok) {
             // Throw a descriptive error if the HTTP status is bad
-            throw new Error(`Failed to fetch recipe details (HTTP ${res.status})`);
+            throw new Error(`Failed to fetch recipe details`);
         }
-        const json: Detail = await res.json();
+        const json = await res.json();
         
         // Using original state updater 'setData'
         setData(json);
@@ -69,66 +66,54 @@ export default function Recipes() {
   const total = data.prepTimeMinutes + data.cookTimeMinutes;
 
   return (
-    <div className="max-w-4xl mx-auto p-4 bg-white rounded-xl shadow-lg my-8">
-      <Link to="/" className="text-blue-600 hover:text-blue-800 font-medium mb-4 inline-block">← 목록으로 돌아가기 (Back to List)</Link>
-
-      <div className="md:flex md:space-x-6 space-y-4 md:space-y-0 pb-6 border-b">
-        <div className="md:w-1/2 shot">
-          <img 
-            src={data.image} 
-            alt={data.name} 
-            className="w-full h-auto rounded-lg shadow-md"
-          />
+    <div className="recipe-detail-container">
+      <Link to="/" className="back-button">← 모든 레시피 보기</Link>
+      <div className="recipe-detail-main-content">
+        <div className="recipe-detail-image-wrapper">
+          <img src={data.image} alt={data.name} className="recipe-detail-image" />
         </div>
 
-        <div className="md:w-1/2 sheet-info space-y-4">
-          <div className="head space-y-2">
-            <h1 className="text-3xl font-bold text-gray-900">{data.name}</h1>
-            <span className="inline-block px-3 py-1 text-sm font-semibold rounded-full bg-indigo-100 text-indigo-700">
-                {data.difficulty}
-            </span>
+        <div className="recipe-detail-header-info">
+          <div className="header-text">
+            <h1>{data.name}</h1>
+            <span className="recipe-difficulty-detail">{data.difficulty}</span>
           </div>
-
-          <div className="grid grid-cols-2 gap-2 text-gray-600 text-sm">
-            <div><b className="font-semibold text-gray-800">총 시간:</b> {total}분</div>
-            <div><b className="font-semibold text-gray-800">준비:</b> {data.prepTimeMinutes}분</div>
-            <div><b className="font-semibold text-gray-800">조리:</b> {data.cookTimeMinutes}분</div>
-             <div>
-                <b className="font-semibold text-gray-800">평점:</b> 
-                <span className="text-yellow-500 ml-1">{data.rating} / 5</span>
-            </div>
+          <div className="recipe-time-info">
+            <p><strong>총 요리시간</strong> {total}분</p>
+            <p><strong>준비시간</strong> {data.prepTimeMinutes}분</p>
+            <p><strong>조리시간</strong> {data.cookTimeMinutes}분</p>
           </div>
-
-          <div className="flex flex-wrap gap-2 pt-2">
-            {data.tags.slice(0, 4).map((t, i) => (
-              <span key={i} className="px-3 py-1 text-xs font-medium bg-gray-200 text-gray-700 rounded-full">
-                    #{t}
-                </span>
+          <div className="recipe-detail-tags">
+            {data.tags.map((tag, index) => (
+              <span key={index} className="recipe-tag">{tag}</span>
             ))}
           </div>
         </div>
       </div>
+      
+      <div className="recipe-detail-ingredients-section">
+        <h2>재료</h2>
+        <p className="recipe-ingredients-list">
+          {data.ingredients.join(", ")}
+        </p>
+      </div>
+      
+      <div className="recipe-detail-section">
+        <h2>레시피</h2>
+        <ol className="recipe-instructions-list">
+          {data.instructions.map((step, index) => (
+            <li key={index}>{step}</li>
+          ))}
+        </ol>
+      </div>
 
-      <div className="block mt-6 space-y-6">
-        <div className="p-4 bg-gray-50 rounded-lg">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-3">재료 (Ingredients)</h2>
-          <p className="text-gray-700 leading-relaxed list">{data.ingredients.join(" • ")}</p>
-        </div>
-
-        <div>
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">레시피 (Instructions)</h2>
-          <ol className="list-decimal pl-5 space-y-3 text-gray-700">
-            {data.instructions.map((s, i) => <li key={i}>{s}</li>)}
-          </ol>
-        </div>
-
-        <div className="pt-4 border-t">
-          <h2 className="text-xl font-semibold text-gray-800 mb-3">요리 정보 (Details)</h2>
-          <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
-            <div><b className="font-medium text-gray-800">유형:</b> {data.cuisine}</div>
-            <div><b className="font-medium text-gray-800">칼로리/1인분:</b> {data.caloriesPerServing} kcal</div>
-            <div><b className="font-medium text-gray-800">특징:</b> {data.mealType.join(", ")}</div>
-          </div>
+      <div className="recipe-detail-section">
+        <h2>요리 정보</h2>
+        <div className="recipe-extra-info">
+          <p><strong>유형:</strong> {data.cuisine}</p>
+          <p><strong>음식특징:</strong> {data.mealType.join(", ")}</p>
+          <p><strong>칼로리:</strong> {data.caloriesPerServing} kcal</p>
+          <p><strong>별점:</strong> {data.rating} / 5</p>
         </div>
       </div>
     </div>

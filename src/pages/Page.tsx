@@ -58,7 +58,7 @@ export default function RecipePage() {
 
       <div className="recipe-grid">
         {currentRecipes.map((recipe) => (
-          <Link to={`/recipe/${recipe.id}`} key={recipe.id} className="recipe-card-link">
+          <Link to={`/recipes/${recipe.id}`} key={recipe.id} className="recipe-card-link">
             <div className="recipe-card">
               <div className="recipe-image-container">
                 <img src={recipe.image} alt={recipe.name} className="recipe-image" />
