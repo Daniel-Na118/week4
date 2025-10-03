@@ -89,7 +89,7 @@ body {
 
 .recipe-difficulty {
   font-size: 14px;
-  color: #2563eb;
+  color: #007AFF;
 }
 
 .recipe-tags {
@@ -197,15 +197,15 @@ body {
   font-weight: 600;
   margin-top: 0;
   margin-bottom: 8px;
-}
+} 
 
 .recipe-difficulty-detail {
   font-size: 14px;
-  color: #2563eb;
-  background-color: #eff6ff;
+  color: #007AFF;
+  background-color: white;
   padding: 4px 12px;
   border-radius: 999px;
-  font-weight: 500;
+  font-weight: 400;
   white-space: nowrap;
 }
 
